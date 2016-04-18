@@ -17,9 +17,11 @@ import random
 import string
 import uuid
 import yaml
+import argparse
 
 from Crypto.PublicKey import RSA
 
+CONFIG_FILE="/etc/kolla/kolla-passwords.yml"
 
 def generate_RSA(bits=2048):
     new_key = RSA.generate(bits, os.urandom)
@@ -29,6 +31,8 @@ def generate_RSA(bits=2048):
 
 
 def main():
+
+
     # These keys should be random uuids
     uuid_keys = ['ceph_cluster_fsid', 'rbd_secret_uuid']
 
@@ -67,8 +71,15 @@ def main():
                     for n in range(length)
                 ])
 
-    with open('/etc/kolla/passwords.yml', 'w') as f:
+    with open(CONFIG_FILE, 'w') as f:
         f.write(yaml.dump(passwords, default_flow_style=False))
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file","-f",help="output file. default to ["+CONFIG_FILE+"]");
+    args = parser.parse_args()
+    if args.file:
+        CONFIG_FILE = args.file    
     main()
+
