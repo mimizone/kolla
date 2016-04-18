@@ -74,7 +74,7 @@ sudo sed -i s/"\[DEFAULT\]"/"${KollaBuildConf}"/ /etc/kolla/kolla-build.conf
 
 echo '-------------------BUILD IMAGES----------------------'
 cd $KOLLA_FOLDER
-#screen -d -m bash "time `kolla-build &>${KOLLA_FOLDER}/kolla/build-ubuntu-source.log`" &
+#screen -d -m bash "time `kolla-build &>${KOLLA_FOLDER}/build-ubuntu-source.log`" &
 screen -d -m bash "time `tools/build.py &>${KOLLA_FOLDER}/build-ubuntu-source.log`" &
 tail -f $KOLLA_FOLDER/build-ubuntu-source.log
 
