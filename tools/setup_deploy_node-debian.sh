@@ -25,25 +25,25 @@ newgrp docker
 
 echo '-------------------SET VARIABLES----------------------'
 NTP_SERVER='172.30.4.3'
-KOLLA_FOLDER=~
-VIRTUAL_ENV=$KOLLA_FOLDER/kolla/'venv'
+KOLLA_FOLDER=~/kolla
+VIRTUAL_ENV=$KOLLA_FOLDER/'venv'
 DOCKER_REGISTRY='172.30.81.153'
 KollaBuildConf="[DEFAULT]\nbase = ubuntu\npush = true\nregistry = 127.0.0.1:4000\ninstall_type = source\n"
 
 
 echo '-------------------DOCKER REGISTRY----------------------'
 docker run -d -p 4000:5000 --restart=always --name registry registry:2
-echo 'DOCKER_OPTS="--insecure-registry 172.30.81.153:4000"' | sudo tee -a /etc/default/docker
+echo 'DOCKER_OPTS="--insecure-registry '${DOCKER_REGISTRY}':4000"' | sudo tee -a /etc/default/docker
 sudo service docker restart
 
 
 echo '-------------------NTP----------------------'
 sudo apt-get install -y ntp
-sudo sed -i '1i server ${NTP_SERVER}' /etc/ntp.conf
+sudo sed -i "1i server ${NTP_SERVER}" /etc/ntp.conf
 sudo service ntp restart
 
 
-echo '-------------------DISBALE LIBVIRT----------------------'
+echo '-------------------DISABLE LIBVIRT----------------------'
 sudo service libvirt-bin stop
 sudo update-rc.d libvirt-bin disable
 sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.libvirtd
@@ -51,8 +51,8 @@ sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.libvirtd
 
 echo '-------------------KOLLA----------------------'
 sudo apt-get install -y python-dev libffi-dev libssl-dev gcc git
-git clone https://git.openstack.org/openstack/kolla $KOLLA_FOLDER
-cd $KOLLA_FOLDER/kolla
+git clone https://git.openstack.org/openstack/kolla ${KOLLA_FOLDER}
+cd $KOLLA_FOLDER
 sudo pip install virtualenv
 virtualenv $VIRTUAL_ENV
 source $VIRTUAL_ENV/bin/activate
@@ -60,18 +60,23 @@ source $VIRTUAL_ENV/bin/activate
 pip install -r requirements.txt
 pip install -U docker-py
 pip install -U python-openstackclient
-pip install -U kolla
+#will be using the code in the git clone
+#pip install -U kolla
 
-cd $KOLLA_FOLDER/kolla
+cd $KOLLA_FOLDER
 sudo cp -r etc/kolla /etc/
 
 pip install -U tox
 tox -e genconfig
-sudo cp $KOLLA_FOLDER/kolla/etc/kolla/kolla-build.conf /etc/kolla/
+sudo cp $KOLLA_FOLDER/etc/kolla/kolla-build.conf /etc/kolla/
 
 sudo sed -i s/"\[DEFAULT\]"/"${KollaBuildConf}"/ /etc/kolla/kolla-build.conf
 
 echo '-------------------BUILD IMAGES----------------------'
-cd $KOLLA_FOLDER/kolla
-screen -d -m bash "time `kolla-build &>${KOLLA_FOLDER}/kolla/build-ubuntu-source.log`" &
-tail -f $KOLLA_FOLDER/kolla/build-ubuntu-source.log
+cd $KOLLA_FOLDER
+#screen -d -m bash "time `kolla-build &>${KOLLA_FOLDER}/kolla/build-ubuntu-source.log`" &
+screen -d -m bash "time `tools/build.py &>${KOLLA_FOLDER}/build-ubuntu-source.log`" &
+tail -f $KOLLA_FOLDER/build-ubuntu-source.log
+
+
+
