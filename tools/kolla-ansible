@@ -38,6 +38,7 @@ Options:
     --verbose, -v                    Increase verbosity of ansible-playbook
 
 Commands:
+    setup        Setup the nodes for basic requirements (ex: docker)
     prechecks    Do pre-deployment checks for hosts
     mariadb_recovery    Recover a completely stopped mariadb cluster
     deploy       Deploy and start all kolla containers
@@ -123,6 +124,10 @@ done
 
 case "$1" in
 
+(setup)
+        ACTION="Setting up nodes"
+        PLAYBOOK="${BASEDIR}/ansible/setupnode.yml"
+        ;;
 (prechecks)
         ACTION="Pre-deployment checking"
         PLAYBOOK="${BASEDIR}/ansible/prechecks.yml"

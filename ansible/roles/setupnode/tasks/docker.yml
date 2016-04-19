@@ -1,0 +1,6 @@
+---
+- name: Installing docker engine
+  script: roles/setupnode/tasks/docker.sh
+  register: result
+  changed_when: false
+  failed_when: result | failed 
